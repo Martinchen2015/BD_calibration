@@ -1,5 +1,5 @@
 clear; clc; clf;
-run('../manopt/importmanopt');      % make sure this is set properly!
+run('./manopt/importmanopt');      % make sure this is set properly!
 addpath('./helpers');
 
 %% Load data:
