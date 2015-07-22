@@ -81,5 +81,17 @@ function [ Aout, Wsol, stats] = BD2_Cali_Manopt(Y, Ain, lambda, mu, varargin)
     %% run the solver
     [Aout, stats.cost, ~, stats.options] = ManoptSolver(problem, Ain(:), options);
     Aout = reshape(Aout, [k n]);
-    Wsol = wsolve2_pdNCG( Y, Aout, lambda, mu, suppack.xinit, INVTOL, INVIT );
+    Wsol = wsolve2_pdNCG( Y, Aout, lambda, mu, suppack.winit, INVTOL, INVIT );
+end
+
+function [store] = computeW(a, store, suppack)
+    % update the catch to store the W*(A)
+    k = suppack.k;
+    n = suppack.n;
+    
+    sol = wsolver2_pdNCG(suppack.Y,reshape(a,[k n]),suppack.lambda,suppack.mu, ...
+        suppack.winit,suppack.INVTOL,suppack.INVIT);
+    store.X = sol.X;
+    store.beta = sol.beta;
+    store.cost = sol.f;
 end
