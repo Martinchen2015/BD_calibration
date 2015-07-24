@@ -95,3 +95,32 @@ function [store] = computeW(a, store, suppack)
     store.beta = sol.beta;
     store.cost = sol.f;
 end
+
+function [stats] = statsfun(problem, a, stats, store, dispfun)
+    dispfun(a,store.X);
+    pause(0.1);
+end
+
+function [cost, store] = costfun(a, store, suppack)
+    if ~(isfield(store,'X') && isfield(store,'beta'))
+        store = computeW(a, store,suppack);
+    end
+    cost = store.cost;
+end
+
+function [egrad, store] = egradfun(a, store, suppack)
+    if ~(isfield(store,'X') && isfield(store,'beta'))
+        store = computeW(a, store,suppack);
+    end
+    
+    k = suppack.k;
+    n = suppack.n;
+    egrad = zeros(prod(k)*n,1);
+    for i = 1:n
+        idx = (i-1)*prod(k) + (1:prod(k));
+        g = cconvfft2(store.X, reshape(a(idx), k)) + store.beta(i) - suppack.Y(:,:,i);
+        tmp = cconvfft2(store.X, g ,[], 'left');
+        tmp = tmp(1:k(1),1:k(2));
+        egrad(idx) = tmp(:);
+    end
+end
