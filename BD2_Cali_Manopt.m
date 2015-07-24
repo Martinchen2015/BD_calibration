@@ -103,14 +103,14 @@ end
 
 function [cost, store] = costfun(a, store, suppack)
     if ~(isfield(store,'X') && isfield(store,'beta'))
-        store = computeW(a, store,suppack);
+        store = computeW(a, store, suppack);
     end
     cost = store.cost;
 end
 
 function [egrad, store] = egradfun(a, store, suppack)
     if ~(isfield(store,'X') && isfield(store,'beta'))
-        store = computeW(a, store,suppack);
+        store = computeW(a, store, suppack);
     end
     
     k = suppack.k;
@@ -123,4 +123,15 @@ function [egrad, store] = egradfun(a, store, suppack)
         tmp = tmp(1:k(1),1:k(2));
         egrad(idx) = tmp(:);
     end
+end
+
+function [ehess, store] = ehessfun(a, u, store, suppack)
+    if ~(isfield(store,'X') && isfield(store, 'beta'))
+        store = computeW(a, store, suppack);
+    end
+    
+    k = suppack.k;
+    n = suppack.n;
+    ehess = Haa_function(u, suppack.Y, reshape(a, [k,n]), store.X, store.beta, ...
+        suppack.lambda, suppack.mu, suppack.INVTOL, suppack.INVIT);
 end
