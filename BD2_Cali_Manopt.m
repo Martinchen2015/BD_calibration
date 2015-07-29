@@ -30,7 +30,8 @@ function [ Aout, Wsol, stats] = BD2_Cali_Manopt(Y, Ain, lambda, mu, varargin)
     
     idx = 1;
     if nvarargin < idx || isempty(varargin{idx})
-        suppack.winit = wsolve2_pdNCG(Y, Ain, lambda, mu, [], INVTOL, INVIT);
+        suppack.winit = wsolver2_pdNCG(Y, Ain, lambda, mu, [], INVTOL, INVIT);
+        
     else
         suppack.winit = varargin{idx};
     end
@@ -81,7 +82,7 @@ function [ Aout, Wsol, stats] = BD2_Cali_Manopt(Y, Ain, lambda, mu, varargin)
     %% run the solver
     [Aout, stats.cost, ~, stats.options] = ManoptSolver(problem, Ain(:), options);
     Aout = reshape(Aout, [k n]);
-    Wsol = wsolve2_pdNCG( Y, Aout, lambda, mu, suppack.winit, INVTOL, INVIT );
+    Wsol = wsolver2_pdNCG( Y, Aout, lambda, mu, suppack.winit, INVTOL, INVIT );
 end
 
 function [store] = computeW(a, store, suppack)
