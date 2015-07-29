@@ -32,7 +32,7 @@ eta     = 5e-3;         % additive Gaussian noise variance
 %% generate Y
 
 X0 = double(rand(m) <= theta);      % X0 ~ Bernoulli(theta)
-bias = randn(n,1);
+bias = zeros(n,1);%randn(n,1);
 Y = zeros([m n]);
 for i = 1:n                         % convolve each slice
     Y(:,:,i) = cconvfft2(A0(:,:,i), X0) + bias(i);

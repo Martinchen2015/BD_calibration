@@ -12,7 +12,7 @@ function [ Aout, Wsol, stats] = BD2_Cali_Manopt(Y, Ain, lambda, mu, varargin)
     end
     
     % Options for w solver
-    INVTOL = 1e-6;
+    INVTOL = 1e-8;
     INVIT = 2e2;
     
     %Options for manopt solvers
