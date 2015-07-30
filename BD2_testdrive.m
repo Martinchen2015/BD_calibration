@@ -26,7 +26,7 @@ A0 = A0/norm(A0(:));
 %}
 
 %% *Parameters to play around with:
-m       = [256 256];    % size of x0 and Y
+m       = [50 50];    % size of x0 and Y
 theta   = 3e-3;         % sparsity
 eta     = 5e-3;         % additive Gaussian noise variance
 %% generate Y
