@@ -43,7 +43,7 @@ function [H_v] = Haa_function(v, Y, A, X, beta, lambda, mu, INVTOL, INVIT)
     for i = 1:n
         tmp = cconvfft2(A(:,:,i), cconvfft2(X,HxxInv_Hwa_v,m,'left')) + ...
             cconvfft2(r(:,:,i),HxxInv_Hwa_v,m,'right') + ...
-            cconvfft2(X, HbbInv_Hwa_v(i).*ones(m),m,'left');
+            cconvfft2(X, HbbInv_Hwa_v(i)*ones(m),m,'left');
         Haw_HxxInv_Hwa_v(:,:,i) = tmp(1:k(1),1:k(2));
     end
     

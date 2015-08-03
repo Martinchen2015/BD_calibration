@@ -28,11 +28,11 @@ A0 = A0/norm(A0(:));
 %% *Parameters to play around with:
 m       = [50 50];    % size of x0 and Y
 theta   = 3e-3;         % sparsity
-eta     = 5e-3;         % additive Gaussian noise variance
+eta     = 1e-3;         % additive Gaussian noise variance
 %% generate Y
 
 X0 = double(rand(m) <= theta);      % X0 ~ Bernoulli(theta)
-bias = zeros(n,1);%randn(n,1);
+bias = randn(n,1);%randn(n,1);
 Y = zeros([m n]);
 for i = 1:n                         % convolve each slice
     Y(:,:,i) = cconvfft2(A0(:,:,i), X0) + bias(i);
@@ -50,6 +50,7 @@ dispfun = ...           % the interface is a little wonky at the moment
 dispfun1 = @(a, X) dispfun(Y, a, X, k, [], 1);
 %% run the Manopt
 Ain = randn([k n]); Ain = Ain/norm(Ain(:));
-lambda1 = 0.1;
+lambda1 = .2;
 [A, Xsol, stats] = BD2_Cali_Manopt( Y, Ain, lambda1, mu, [], dispfun1, method, maxit);
+%[A_or,Xsol_or,stats_or] = BD2_Manopt(Y,Ain,lambda1,mu,[],dispfun1,method,maxit);
 %% display
