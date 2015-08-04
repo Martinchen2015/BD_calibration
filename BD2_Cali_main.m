@@ -1,10 +1,10 @@
-function [Aout, Xout, stats] = BD2_Cali_main(Y0, k, lamstruct, varargin)
+function [Aout, Xout, Bout, stats] = BD2_Cali_main(Y0, k, lamstruct, varargin)
 % main fucntion of calculate the A and X with a biased Y
 % Defaults for the options:
 mu = 1e-6;              % Approximation quality of the sparsity promoter.
 kplus = ceil(0.5*k);    % For Phase II/III: k2 = k + 2*kplus.
 method = 'TR';          % Solver for optimizing over the sphere.
-maxit = 20;             % Maximum number of iterations for the solver.
+maxit = 25;             % Maximum number of iterations for the solver.
 dispfun = @(Y, a, X, k, kplus, idx) 0;   % Display/plotting function.
 
 % Application-specific options:
@@ -96,12 +96,12 @@ if flag2
     Wsol2.X_dual = circshift(Wsol.X_dual, -kplus);
     Wsol2.beta = Wsol.beta;
     
-    lambda2 = lamdtruct.lambda1;
+    lambda2 = lamstruct.lambda1;
     score = zeros(2*kplus+1);
     fprintf('PHASE II: \n=========\n');
     while lambda2 >= lamstruct.lambda2_end
         fprintf('lambda = %.1e: \n', lambda2);
-        [A2, Wsol2, stats] = BD2_Cali_Manopt(Y, Ain, lambda2, mu, Wsol2, dispfun23, method, maxit);
+        [A2, Wsol2, stats] = BD2_Cali_Manopt(Y, A2, lambda2, mu, Wsol2, dispfun23, method, maxit);
         fprintf('\n');
         %Attempt to 'unshift" the a and x by taking the l1-norm over all k-contiguous elements:
         for tau1 = -kplus(1):kplus(1)
@@ -119,7 +119,7 @@ if flag2
         Wsol2.X_dual = circshift(Wsol2.X_dual, tau);
         Wsol2.beta = Wsol2.beta;
         
-        dispfun23(A2,Xsol2.X);
+        dispfun23(A2,Wsol2.X);
         lambda2 = lambda2/lamstruct.lam2dec;
     end  
 end
@@ -127,16 +127,17 @@ end
 %% Phase III
 if flag3
     fprintf('PHASE III: \n=========\n');
-    Xsol3 = wsolve2_pdNCG(Y, A2, lamstruct.lambda3, mu, Xsol2, 1e-6, 2e2);
-    dispfun23(A2, Xsol3.X);
+    Wsol3 = wsolve2_pdNCG(Y, A2, lamstruct.lambda3, mu, Wsol2, 1e-6, 2e2);
+    dispfun23(A2, Wsol3.X);
 else
-    Xsol3 = Xsol2;
+    Wsol3 = Wsol2;
 end
 clear Xsol2;
 
 %% final result
 Aout = A2(kplus(1)+(1:k(1)), kplus(2)+(1:k(2)), :);
-Xout = circshift(Xsol3.X,kplus);
+Xout = circshift(Wsol3.X,kplus);
+Bout = Wsol3.beta;
 stats.A = A;
 stats.A2 = A2;
 

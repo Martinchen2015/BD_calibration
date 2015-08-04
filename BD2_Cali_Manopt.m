@@ -17,7 +17,7 @@ function [ Aout, Wsol, stats] = BD2_Cali_Manopt(Y, Ain, lambda, mu, varargin)
     
     %Options for manopt solvers
     options.verbosity = 2;
-    options.tolgradnorm = 1e-4;
+    options.tolgradnorm = 1e-8;
     options.linesearch = @linesearch;
     options.ls_contraction_factor = 0.2;
     options.ls_suff_decr = 1e-3;

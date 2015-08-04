@@ -8,7 +8,7 @@ ALPHATOL = 1e-10; % tolarance of alpha
 MAXIT = 5e1; % max times of iteration
 C2 = 1e-6; % parameter of object function to be decrease
 C3 = 2e-1; % track back rate
-PCGTOL = 1e-6;
+PCGTOL = 1e-8;
 PCGIT = 2e2;
 
 % initialize the variables
