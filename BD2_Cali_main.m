@@ -81,4 +81,82 @@ k2 = k + 2*kplus;
 dispfun1 = @(a, X) dispfun(Y, a, X, k, [], 1);
 dispfun23 = @(a, X) dispfun(Y, a, X, k2, kplus, 1);
 
+%% Phase I: First pass at BD
+Ain = randn([k n]); Ain = Ain/norm(Ain(:));
+
+fprintf('PHASE I: \n=========\n');
+[A, Wsol, stats] = BD2_Cali_Manopt(Y, Ain,lamstruct.lambda1, mu, [], dispfun1, method, maxit);
+fprintf('\n');
+
+%% Phase II: Lift the sphere and do lambda continuation
+if flag2
+    A2 = zeros([k2 n]);
+    A2(kplus(1)+(1:k(1)),kplus(2)+(1:k(2)),:) = A;
+    Wsol2.X = circshift(Wsol.X, -kplus);
+    Wsol2.X_dual = circshift(Wsol.X_dual, -kplus);
+    Wsol2.beta = Wsol.beta;
+    
+    lambda2 = lamdtruct.lambda1;
+    score = zeros(2*kplus+1);
+    fprintf('PHASE II: \n=========\n');
+    while lambda2 >= lamstruct.lambda2_end
+        fprintf('lambda = %.1e: \n', lambda2);
+        [A2, Wsol2, stats] = BD2_Cali_Manopt(Y, Ain, lambda2, mu, Wsol2, dispfun23, method, maxit);
+        fprintf('\n');
+        %Attempt to 'unshift" the a and x by taking the l1-norm over all k-contiguous elements:
+        for tau1 = -kplus(1):kplus(1)
+            ind1 = tau1+kplus(1)+1;
+            for tau2 = -kplus(2):kplus(2)
+                ind2 = tau2+kplus(2)+1;
+                temp = A2(ind1:(ind1+k(1)-1), ind2:(ind2+k(2))-1,:);
+                score(ind1,ind2) = norm(temp(:), 1);
+            end
+        end
+        [temp,ind1] = max(score); [~,ind2] = max(temp);
+        tau = [ind1(ind2) ind2]-kplus-1;
+        A2 = circshift(A2,-tau);
+        Wsol2.X = circshift(Wsol2.X, tau);
+        Wsol2.X_dual = circshift(Wsol2.X_dual, tau);
+        Wsol2.beta = Wsol2.beta;
+        
+        dispfun23(A2,Xsol2.X);
+        lambda2 = lambda2/lamstruct.lam2dec;
+    end  
+end
+
+%% Phase III
+if flag3
+    fprintf('PHASE III: \n=========\n');
+    Xsol3 = wsolve2_pdNCG(Y, A2, lamstruct.lambda3, mu, Xsol2, 1e-6, 2e2);
+    dispfun23(A2, Xsol3.X);
+else
+    Xsol3 = Xsol2;
+end
+clear Xsol2;
+
+%% final result
+Aout = A2(kplus(1)+(1:k(1)), kplus(2)+(1:k(2)), :);
+Xout = circshift(Xsol3.X,kplus);
+stats.A = A;
+stats.A2 = A2;
+
+if signflip
+    thresh = 0.2*max(abs(Xout(:)));
+    sgn = sign(sum(Xout(abs(Xout) >= thresh)));
+    Aout = sgn*Aout;
+    Xout = sgn*Xout;
+    stats.A = sgn*A;
+    stats.A2 = sgn*A2;
+end
+
+if center
+    Xout = circshift(Xout, ceil(k/2));
+end
+
+if zeropad
+    Xout = Xout(1:m0(1), 1:m0(2));
+end
+
+runtime = toc(starttime);
+fprintf('\nDone! Runtime = %.2fs. \n\n', runtime);
 end
